@@ -1,0 +1,136 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 13.375" name="TestGuruDB">
+  <DataContextMoniker Name="/TestGuruDBDataContext" />
+  <nestedChildShapes>
+    <classShape Id="d639564e-0204-4f57-b764-a633eaf370cf" absoluteBounds="3.5, 8.125, 2, 2.9247054036458309">
+      <DataClassMoniker Name="/TestGuruDBDataContext/Article" />
+      <nestedChildShapes>
+        <elementListCompartment Id="c97dec2b-5800-4b56-ad67-502ca3bceeae" absoluteBounds="3.515, 8.585, 1.9700000000000002, 2.364705403645833" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="1ae7caa1-2e2c-4712-b174-dd11e212817d" absoluteBounds="0.75, 1.625, 2, 1.3862939453125003">
+      <DataClassMoniker Name="/TestGuruDBDataContext/Role" />
+      <nestedChildShapes>
+        <elementListCompartment Id="d594c32d-2b2e-46a4-aeaf-45fa7a1f4ba8" absoluteBounds="0.765, 2.085, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="316f0adf-5251-4f2b-932d-c6a5de7b97ee" absoluteBounds="6.25, 7.75, 2, 1.1939925130208344">
+      <DataClassMoniker Name="/TestGuruDBDataContext/Attachment" />
+      <nestedChildShapes>
+        <elementListCompartment Id="766f9cd0-f023-4885-b236-5d33cce12282" absoluteBounds="6.265, 8.21, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="9994d69b-8e42-42ba-b072-fd7f8ecef892" absoluteBounds="6.25, 4.875, 2, 1.7708968098958327">
+      <DataClassMoniker Name="/TestGuruDBDataContext/Comment" />
+      <nestedChildShapes>
+        <elementListCompartment Id="5048e9ed-4fcd-455b-a567-a11892196835" absoluteBounds="6.265, 5.335, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="ff9fddb3-ad4c-401d-96f8-1a1d9ea55ddd" absoluteBounds="3.5, 5.625, 2, 1.7708968098958327">
+      <DataClassMoniker Name="/TestGuruDBDataContext/UserFile" />
+      <nestedChildShapes>
+        <elementListCompartment Id="401f6264-027a-400b-9555-5d2584bca126" absoluteBounds="3.515, 6.085, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="cc4c04ec-9307-4f3f-b7b7-c8daf081d05e" absoluteBounds="3.5, 2.75, 2, 1.1939925130208335">
+      <DataClassMoniker Name="/TestGuruDBDataContext/AccountRole" />
+      <nestedChildShapes>
+        <elementListCompartment Id="7dc066ea-c813-46a2-b768-da6823dba43c" absoluteBounds="3.515, 3.21, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="07fad9be-146b-4c42-a1f1-0bc1b9232f4c" absoluteBounds="0.75, 12.125, 2, 1.0016910807291666">
+      <DataClassMoniker Name="/TestGuruDBDataContext/Permission" />
+      <nestedChildShapes>
+        <elementListCompartment Id="348c07d3-c94c-4e07-ac7c-861c4f0d8f01" absoluteBounds="0.765, 12.585, 1.9700000000000002, 0.44169108072916669" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="7d37a29f-7aaa-403b-bc01-c116eb19a00f" absoluteBounds="3.5, 0.75, 2, 1.1939925130208335">
+      <DataClassMoniker Name="/TestGuruDBDataContext/PermissionRole" />
+      <nestedChildShapes>
+        <elementListCompartment Id="1a9c3edb-0f01-44c4-9f6b-f837fb36e644" absoluteBounds="3.515, 1.21, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="adf4e87e-c2ce-4061-bb7b-26beb53d94aa" absoluteBounds="6.75, 1.75, 2, 1.1939925130208335">
+      <DataClassMoniker Name="/TestGuruDBDataContext/RestrictedEmail" />
+      <nestedChildShapes>
+        <elementListCompartment Id="447c24a5-0730-46f9-be60-862303bc3741" absoluteBounds="6.765, 2.21, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(5.5 : 8.53449625651042); (6.25 : 8.53449625651042)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Article/Article_Attachment" />
+      <nodes>
+        <classShapeMoniker Id="d639564e-0204-4f57-b764-a633eaf370cf" />
+        <classShapeMoniker Id="316f0adf-5251-4f2b-932d-c6a5de7b97ee" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(5.5 : 8.125); (5.875 : 7.75); (5.875 : 5.76044840494792); (6.25 : 5.76044840494792)]" fixedFrom="NotFixed" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Article/Article_Comment" />
+      <nodes>
+        <classShapeMoniker Id="d639564e-0204-4f57-b764-a633eaf370cf" />
+        <classShapeMoniker Id="9994d69b-8e42-42ba-b072-fd7f8ecef892" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(5.5 : 7.33459553570713); (6.0625 : 7.89709553570713); (6.0625 : 7.5625); (6.25 : 7.75)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/TestGuruDBDataContext/UserFile/UserFile_Attachment" />
+      <nodes>
+        <classShapeMoniker Id="ff9fddb3-ad4c-401d-96f8-1a1d9ea55ddd" />
+        <classShapeMoniker Id="316f0adf-5251-4f2b-932d-c6a5de7b97ee" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 2.88064697265625); (3.04166666666667 : 2.88064697265625 : JumpStart); (3.20833333333333 : 2.88064697265625 : JumpEnd); (3.5 : 2.88064697265625)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Role/Role_AccountRole" />
+      <nodes>
+        <classShapeMoniker Id="1ae7caa1-2e2c-4712-b174-dd11e212817d" />
+        <classShapeMoniker Id="cc4c04ec-9307-4f3f-b7b7-c8daf081d05e" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 12.1257695316006); (3.125 : 11.7507695316006); (3.125 : 2.31990996880008); (3.50091745577925 : 1.94399251302083)]" fixedFrom="NotFixed" fixedTo="NotFixed">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Permission/Permission_PermissionRole" />
+      <nodes>
+        <classShapeMoniker Id="07fad9be-146b-4c42-a1f1-0bc1b9232f4c" />
+        <classShapeMoniker Id="7d37a29f-7aaa-403b-bc01-c116eb19a00f" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.75 : 1.78449625651042); (3.5 : 1.78449625651042)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Role/Role_PermissionRole" />
+      <nodes>
+        <classShapeMoniker Id="1ae7caa1-2e2c-4712-b174-dd11e212817d" />
+        <classShapeMoniker Id="7d37a29f-7aaa-403b-bc01-c116eb19a00f" />
+      </nodes>
+    </associationConnector>
+    <classShape Id="65e65721-10dd-450f-a724-bec04f4b7cc8" absoluteBounds="0.5, 4.375, 2, 3.6939111328124996">
+      <DataClassMoniker Name="/TestGuruDBDataContext/Account" />
+      <nestedChildShapes>
+        <elementListCompartment Id="ea8be89a-9093-4c22-b954-d1499e1db1dc" absoluteBounds="0.51500000000000012, 4.835, 1.9700000000000002, 3.1339111328125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <associationConnector edgePoints="[(1.5 : 8.0689111328125); (1.5 : 9.58735270182292); (3.04166666666667 : 9.58735270182292 : JumpStart); (3.20833333333333 : 9.58735270182292 : JumpEnd); (3.5 : 9.58735270182292)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Account/Account_Article" />
+      <nodes>
+        <classShapeMoniker Id="65e65721-10dd-450f-a724-bec04f4b7cc8" />
+        <classShapeMoniker Id="d639564e-0204-4f57-b764-a633eaf370cf" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.5 : 5.21875); (3.04166666666667 : 5.21875 : JumpStart); (3.20833333333333 : 5.21875 : JumpEnd); (6.25 : 5.21875)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Account/Account_Comment" />
+      <nodes>
+        <classShapeMoniker Id="65e65721-10dd-450f-a724-bec04f4b7cc8" />
+        <classShapeMoniker Id="9994d69b-8e42-42ba-b072-fd7f8ecef892" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(2.5 : 6.51044840494792); (3.04166666666667 : 6.51044840494792 : JumpStart); (3.20833333333333 : 6.51044840494792 : JumpEnd); (3.5 : 6.51044840494792)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Account/Account_UserFile" />
+      <nodes>
+        <classShapeMoniker Id="65e65721-10dd-450f-a724-bec04f4b7cc8" />
+        <classShapeMoniker Id="ff9fddb3-ad4c-401d-96f8-1a1d9ea55ddd" />
+      </nodes>
+    </associationConnector>
+    <associationConnector edgePoints="[(0.59375 : 4.375); (0.59375 : 3.50889322916667); (3.04166666666667 : 3.50889322916667 : JumpStart); (3.20833333333333 : 3.50889322916667 : JumpEnd); (3.5 : 3.50889322916667)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+      <AssociationMoniker Name="/TestGuruDBDataContext/Account/Account_AccountRole" />
+      <nodes>
+        <classShapeMoniker Id="65e65721-10dd-450f-a724-bec04f4b7cc8" />
+        <classShapeMoniker Id="cc4c04ec-9307-4f3f-b7b7-c8daf081d05e" />
+      </nodes>
+    </associationConnector>
+  </nestedChildShapes>
+</ordesignerObjectsDiagram>
