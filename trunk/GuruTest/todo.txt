@@ -1,0 +1,10 @@
+fuer Tomeche:
+- Account.LastName zmiana na null
+- dodaæ nvarchar(256) Account.PasswordQuestion
+- dodaæ nvarchar(128) Account.PasswordAnswer
+- dodaæ datetime Account.LastActivityDate
+
+todo: 
+- dodaæ unlock i chwilê póŸniej autounlock
+http://www.wrox.com/WileyCDA/Section/Implementing-Automatic-Unlocking-in-ASP-NET-2-0-SqlMembershipProvider.id-292262.html
+- dodaæ wysy³anie maila z nowym has³em
