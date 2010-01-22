@@ -10,11 +10,15 @@
     <form id="form1" runat="server">
     <div>
     
-        <asp:Login ID="Login1" runat="server" VisibleWhenLoggedIn="False">
+        <asp:Login ID="Login1" runat="server" VisibleWhenLoggedIn="False" 
+            PasswordRecoveryText="Odzyskiwanie hasełka" 
+            PasswordRecoveryUrl="http://www.wp.pl">
         </asp:Login>
     
     </div>
     <asp:Button ID="Button1" runat="server" onclick="Button1_Click" Text="Button" />
+    <asp:ChangePassword ID="ChangePassword1" runat="server">
+    </asp:ChangePassword>
     </form>
 </body>
 </html>
