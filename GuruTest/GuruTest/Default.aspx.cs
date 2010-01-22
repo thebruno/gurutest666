@@ -11,10 +11,12 @@ namespace GuruTest
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+
             System.Web.Security.MembershipCreateStatus t;
-            int a;
+            //System.Web.Security.Membership.Provider.UnlockUser("f");
+            //int a;
             //System.Web.Security.Membership.Provider.GetAllUsers(0, 100, out a);
-            //System.Web.Security.Membership.Provider.CreateUser("f", "test!!!!", "f@f.f", "f?", "f!", false, null, out t); 
+            //System.Web.Security.Membership.Provider.CreateUser("f", "test!!!!", "f@f.f", "f?", "f!", false, null, out t);
         }
 
         protected void Button1_Click(object sender, EventArgs e)

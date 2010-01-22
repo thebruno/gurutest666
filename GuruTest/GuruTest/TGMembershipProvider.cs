@@ -18,6 +18,7 @@ namespace GuruTest
     public sealed class TGMembershipProvider : MembershipProvider
     {
         private int newPasswordLength = 8;
+        private int pAutoUnlockTime = 60;
         private string eventSource = "TGSqlMembershipProvider";
         private string eventLog = "Application";
         private string exceptionMessage = "An exception occurred. Please check the Event Log.";
@@ -53,6 +54,7 @@ namespace GuruTest
                                             System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath);
             pMaxInvalidPasswordAttempts = Convert.ToInt32(GetConfigValue(config["maxInvalidPasswordAttempts"], "5"));
             pPasswordAttemptWindow = Convert.ToInt32(GetConfigValue(config["passwordAttemptWindow"], "10"));
+            pAutoUnlockTime = Convert.ToInt32(GetConfigValue(config["autoUnlockTime"], "10"));
             pMinRequiredNonAlphanumericCharacters = Convert.ToInt32(GetConfigValue(config["minRequiredNonAlphanumericCharacters"], "1"));
             pMinRequiredPasswordLength = Convert.ToInt32(GetConfigValue(config["minRequiredPasswordLength"], "7"));
             pPasswordStrengthRegularExpression = Convert.ToString(GetConfigValue(config["passwordStrengthRegularExpression"], ""));
@@ -69,9 +71,7 @@ namespace GuruTest
               ConfigurationManager.ConnectionStrings[config["connectionStringName"]];
 
             if (ConnectionStringSettings == null || ConnectionStringSettings.ConnectionString.Trim() == "")
-            {
                 throw new ProviderException("Connection string cannot be blank.");
-            }
 
             connectionString = ConnectionStringSettings.ConnectionString;
 
@@ -86,7 +86,6 @@ namespace GuruTest
         {
             if (String.IsNullOrEmpty(configValue))
                 return defaultValue;
-
             return configValue;
         }
 
@@ -110,36 +109,35 @@ namespace GuruTest
             get { return pEnablePasswordReset; }
         }
 
-
         public override bool EnablePasswordRetrieval
         {
             get { return pEnablePasswordRetrieval; }
         }
-
 
         public override bool RequiresQuestionAndAnswer
         {
             get { return pRequiresQuestionAndAnswer; }
         }
 
-
         public override bool RequiresUniqueEmail
         {
             get { return pRequiresUniqueEmail; }
         }
-
 
         public override int MaxInvalidPasswordAttempts
         {
             get { return pMaxInvalidPasswordAttempts; }
         }
 
-
         public override int PasswordAttemptWindow
         {
             get { return pPasswordAttemptWindow; }
         }
 
+        public int AutoUnlockTime
+        {
+            get { return pAutoUnlockTime; }
+        }
 
         public override MembershipPasswordFormat PasswordFormat
         {
@@ -167,9 +165,181 @@ namespace GuruTest
             get { return pPasswordStrengthRegularExpression; }
         }
 
+        /// <summary>
+        /// Helper function to update user lock status and return if user is validated considering lock status
+        /// </summary>
+        /// <param name="userID">ID which belongs to user being validated, optional if userName passed</param>
+        /// <param name="userName">Login which belongs to user begin validate, optional if ID passed</param>
+        /// <param name="dataCorrect">True if user entered correct password/answer</param>
+        /// <param name="AnswerNotPassword">True if this function is called due to answer (not password) validation</param>
+        /// <param name="db">Data context to use, null if called function is to create and use it's own database connection</param>
+        /// <returns>True if user gave correct validation data and was not locked out</returns>
+        private bool CheckLock(int? userID, string userName, bool dataCorrect, bool AnswerNotPassword, TestGuruDBDataContext db)
+        {
+            DbConnection connection = null;
+            bool useOwnConnection = (db == null);
+            Account userOfConcern = null;
+            // set to true causes function to commit changes before return
+            bool performCommit = false;
+
+            try
+            {
+                // create own connection if necessary
+                if (useOwnConnection)
+                {
+                    DbProviderFactory factory = DbProviderFactories.GetFactory(factoryString);
+                    connection = factory.CreateConnection();
+                    connection.ConnectionString = connectionString;
+                    connection.Open();
+                    db = new TestGuruDBDataContext(connection);
+                    db.Transaction = connection.BeginTransaction(IsolationLevel.RepeatableRead);
+                }
+
+                // check if user is locked out
+                var result = from i in db.Accounts
+                             where (userID != null ? i.ID == userID : true)
+                             && (userName != null ? i.Login == userName : true)
+                             && i.Deleted == false
+                             && i.Active == true
+                             select i;
+
+                if (result.Count() <= 0)
+                    // miraculously no such user found
+                    return false;
+
+                userOfConcern = result.First();
+
+                if (dataCorrect)
+                {
+                    // data provided by user was correct
+                    if (userOfConcern.Locked)
+                    {
+                        // check if lockout window hasn't expired
+                        if (userOfConcern.LockDateTime.Value.AddMinutes(AutoUnlockTime) < DateTime.Now)
+                        {
+                            // clear lock
+                            userOfConcern.Locked = false;
+                            userOfConcern.LockDateTime = null;
+                            userOfConcern.BadAnswerAttempts = 0;
+                            userOfConcern.BadPasswordAttempts = 0;
+                            // update database
+                            db.SubmitChanges();
+                            performCommit = true;
+                            // user was locked, but provided correct data and window expired, so lock has been removed
+                            return true;
+                        }
+                        else
+                            // user provided correct data, but is locked out and window still has not expired
+                            return false;
+                    }
+                    else
+                    {
+                        // clear bad attempt counter
+                        userOfConcern.BadAnswerAttempts = 0;
+                        userOfConcern.BadPasswordAttempts = 0;
+                        // update database
+                        db.SubmitChanges();
+                        performCommit = true;
+                        // user provided correct data and is not locked out
+                        return true;
+                    }
+                }
+                else
+                {
+                    // data provided by user was incorrect
+                    if (userOfConcern.Locked)
+                        // update lock window datetime
+                        userOfConcern.LockDateTime = DateTime.Now;
+                    else
+                    {
+                        if (AnswerNotPassword)
+                        {
+                            // clear bad attempt counter if it's window expired
+                            if (userOfConcern.BadAnswerWindowStart.AddMinutes(pPasswordAttemptWindow) < DateTime.Now)
+                            {
+                                userOfConcern.BadAnswerWindowStart = DateTime.Now;
+                                userOfConcern.BadAnswerAttempts = 0;
+                            }
+
+                            // update window start if bad data is given for the first time
+                            if (AnswerNotPassword && userOfConcern.BadAnswerAttempts == 0)
+                                userOfConcern.BadAnswerWindowStart = DateTime.Now;
+
+                            // increment bad attempt counter
+                            ++userOfConcern.BadAnswerAttempts;
+
+                            // check if counter hasn't exceeded it's max value
+                            if (userOfConcern.BadAnswerAttempts > pMaxInvalidPasswordAttempts)
+                            {
+                                // lock user
+                                userOfConcern.Locked = true;
+                                userOfConcern.LockDateTime = DateTime.Now;
+                            }
+                        }
+                        else
+                        {
+                            // clear bad attempt counter if it's window expired
+                            if (userOfConcern.BadPasswordWindowStart.AddMinutes(pPasswordAttemptWindow) < DateTime.Now)
+                            {
+                                userOfConcern.BadPasswordWindowStart = DateTime.Now;
+                                userOfConcern.BadPasswordAttempts = 0;
+                            }
+
+                            // update window start if bad data is given for the first time
+                            if (userOfConcern.BadPasswordAttempts == 0)
+                                userOfConcern.BadPasswordWindowStart = DateTime.Now;
+
+                            // increment bad attempt counter
+                            ++userOfConcern.BadPasswordAttempts;
+
+                            // check if counter hasn't exceeded it's max value
+                            if (userOfConcern.BadPasswordAttempts > pMaxInvalidPasswordAttempts)
+                            {
+                                // lock user
+                                userOfConcern.Locked = true;
+                                userOfConcern.LockDateTime = DateTime.Now;
+                            }
+                        }
+                    }
+                    // update database
+                    db.SubmitChanges();
+                    performCommit = true;
+
+                    return false;
+                }
+            }
+            catch (Exception e)
+            {
+                if (WriteExceptionsToEventLog)
+                {
+                    WriteToEventLog(e, "Unhandled exception in UpdateLock method");
+                    throw new ProviderException(exceptionMessage);
+                }
+                else
+                    throw e;
+            }
+            finally
+            {
+                if (useOwnConnection)
+                {
+                    try
+                    {
+                        // end transaction
+                        if (performCommit)
+                            db.Transaction.Commit();
+                        else
+                            db.Transaction.Rollback();
+                        // close database connection
+                        connection.Close();
+                    }
+                    catch (Exception) { }
+                }
+            }
+        }
+
         public override bool ChangePassword(string username, string oldPwd, string newPwd)
         {
-            if (!ValidateUser(username, oldPwd))
+            if (!CheckLock(null, username, ValidateUser(username, oldPwd), false, null))
                 return false;
 
             ValidatePasswordEventArgs args = new ValidatePasswordEventArgs(username, newPwd, true);
@@ -184,7 +354,7 @@ namespace GuruTest
             try
             {
                 TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
-                Account account = GetAccount(username);
+                Account account = GetAccount(username, db);
                 if (account != null)
                 {
                     account.Password = MD5.Create().ComputeHash(Encoding.Default.GetBytes(newPwd));
@@ -210,17 +380,17 @@ namespace GuruTest
                       string newPwdQuestion,
                       string newPwdAnswer)
         {
-            if (!ValidateUser(username, password))
+            if (!CheckLock(null, username, ValidateUser(username, password), false, null))
                 return false;
 
             try
             {
                 TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
-                Account account = GetAccount(username);
+                Account account = GetAccount(username, db);
                 if (account != null)
                 {
                     account.PasswordQuestion = newPwdQuestion;
-                    account.PasswordAnswer = newPwdAnswer;
+                    account.PasswordAnswer = MD5.Create().ComputeHash(Encoding.Default.GetBytes(newPwdAnswer));
                     db.SubmitChanges();
                     return true;
                 }
@@ -283,25 +453,25 @@ namespace GuruTest
 								    "@Email",
 								    "@AGUID",
 								    "@TGUID",
-                                    "@PasswordQuestion",
-                                    "@PasswordAnswer"
-							      };
+                    "@PasswordQuestion",
+                    "@PasswordAnswer"
+          };
                     DbType[] types = {  DbType.StringFixedLength,
 							    DbType.Binary,
 							    DbType.StringFixedLength,
 							    DbType.Guid,
 							    DbType.Guid,
-                                DbType.StringFixedLength,
-                                DbType.StringFixedLength
-						     };
+                  DbType.StringFixedLength,
+                  DbType.Binary
+          };
                     object[] values = { username.ToLower(),
 							    MD5.Create().ComputeHash(Encoding.Default.GetBytes(password)),
 							    email,
 							    Guid.NewGuid(),
 							    Guid.NewGuid(),
-                                passwordQuestion,
-                                passwordAnswer
-						      };
+                  passwordQuestion,
+                  MD5.Create().ComputeHash(Encoding.Default.GetBytes(passwordAnswer))
+          };
                     for (int i = 0; i < paramNames.Length; i++)
                         command.Parameters.Add(CreateParameter(paramNames[i], types[i], values[i]));
                     command.ExecuteNonQuery();
@@ -318,6 +488,7 @@ namespace GuruTest
 
                         try
                         {
+                            // TODO: uncomment following line
                             //MailManagement.SendActivationEmail(toReturn as TGMembershipUser);
                         }
                         catch (Exception ex)
@@ -562,7 +733,41 @@ namespace GuruTest
 
         public override bool UnlockUser(string username)
         {
-            return false;
+            try
+            {
+                // create connection
+                TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
+
+                // check if user is locked out
+                var result = from i in db.Accounts
+                             where username == i.Login && i.Deleted == false && i.Active == true
+                             select i;
+
+                if (result.Count() <= 0)
+                    // no such user found
+                    return false;
+
+                Account userOfConcern = result.First();
+                // clear lock
+                userOfConcern.Locked = false;
+                userOfConcern.LockDateTime = null;
+                userOfConcern.BadAnswerAttempts = 0;
+                userOfConcern.BadPasswordAttempts = 0;
+                // update database
+                db.SubmitChanges();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                if (WriteExceptionsToEventLog)
+                {
+                    WriteToEventLog(e, "Unhandled exception in UnlockUser method");
+                    throw new ProviderException(exceptionMessage);
+                }
+                else
+                    throw e;
+            }
         }
 
         public override string GetUserNameByEmail(string email)
@@ -575,101 +780,86 @@ namespace GuruTest
 
         public override string ResetPassword(string username, string answer)
         {
-            return "NOT IMPLEMENTED";
-            /*if (!EnablePasswordReset)
+            if (!EnablePasswordReset)
                 throw new NotSupportedException("Password reset is not enabled.");
 
             if (answer == null && RequiresQuestionAndAnswer)
                 throw new ProviderException("Password answer required for password reset.");
 
+            // get new password
             string newPassword = System.Web.Security.Membership.GeneratePassword(newPasswordLength, MinRequiredNonAlphanumericCharacters);
 
             ValidatePasswordEventArgs args = new ValidatePasswordEventArgs(username, newPassword, true);
             OnValidatingPassword(args);
-
             if (args.Cancel)
                 if (args.FailureInformation != null)
                     throw args.FailureInformation;
                 else
                     throw new MembershipPasswordException("Reset password canceled due to password validation failure.");
 
-
-            OdbcConnection conn = new OdbcConnection(connectionString);
-            OdbcCommand cmd = new OdbcCommand("SELECT PasswordAnswer, IsLockedOut FROM Users " +
-                  " WHERE Username = ? AND ApplicationName = ?", conn);
-
-            cmd.Parameters.Add("@Username", OdbcType.VarChar, 255).Value = username;
-            cmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = pApplicationName;
-
-            int rowsAffected = 0;
-            string passwordAnswer = "";
-            OdbcDataReader reader = null;
+            bool performCommit = false;
+            TestGuruDBDataContext db = null;
+            DbConnection connection = null;
+            Account userOfConcern = null;
 
             try
             {
-                conn.Open();
+                // initialize database connection
+                DbProviderFactory factory = DbProviderFactories.GetFactory(factoryString);
+                connection = factory.CreateConnection();
+                connection.ConnectionString = connectionString;
+                connection.Open();
+                db = new TestGuruDBDataContext(connection);
+                db.Transaction = connection.BeginTransaction(IsolationLevel.RepeatableRead);
 
-                reader = cmd.ExecuteReader(CommandBehavior.SingleRow);
+                // check if given answer is correct
+                var result = from i in db.Accounts
+                             where i.Login == username && i.Active && !i.Deleted
+                             select i;
 
-                if (reader.HasRows)
+                if (result.Count() <= 0)
+                    throw new MembershipPasswordException("The supplied user name is not found.");
+
+                userOfConcern = result.First();
+
+                if (!RequiresQuestionAndAnswer || CheckLock(null, username, userOfConcern.PasswordAnswer == MD5.Create().ComputeHash(Encoding.Default.GetBytes(answer)), true, db))
                 {
-                    reader.Read();
+                    // TODO: uncomment following line
+                    //MailManagement.SendNewPasswordEmail(userOfConcern, newPassword);
+                    // update password in database
+                    userOfConcern.Password = MD5.Create().ComputeHash(Encoding.Default.GetBytes(newPassword));
+                    db.SubmitChanges();
+                    performCommit = true;
 
-                    if (reader.GetBoolean(1))
-                        throw new MembershipPasswordException("The supplied user is locked out.");
-
-                    passwordAnswer = reader.GetString(0);
+                    return newPassword;
                 }
                 else
-                {
-                    throw new MembershipPasswordException("The supplied user name is not found.");
-                }
-
-                if (RequiresQuestionAndAnswer && !CheckPassword(answer, passwordAnswer))
-                {
-                    UpdateFailureCount(username, "passwordAnswer");
-
-                    throw new MembershipPasswordException("Incorrect password answer.");
-                }
-
-                OdbcCommand updateCmd = new OdbcCommand("UPDATE Users " +
-                    " SET Password = ?, LastPasswordChangedDate = ?" +
-                    " WHERE Username = ? AND ApplicationName = ? AND IsLockedOut = False", conn);
-
-                updateCmd.Parameters.Add("@Password", OdbcType.VarChar, 255).Value = EncodePassword(newPassword);
-                updateCmd.Parameters.Add("@LastPasswordChangedDate", OdbcType.DateTime).Value = DateTime.Now;
-                updateCmd.Parameters.Add("@Username", OdbcType.VarChar, 255).Value = username;
-                updateCmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = pApplicationName;
-
-                rowsAffected = updateCmd.ExecuteNonQuery();
+                    throw new MembershipPasswordException("Answer is incorrect or user is locked out.");
             }
-            catch (OdbcException e)
+            catch (Exception e)
             {
                 if (WriteExceptionsToEventLog)
                 {
-                    WriteToEventLog(e, "ResetPassword");
-
+                    WriteToEventLog(e, "Unhandled exception in ResetPassword method");
                     throw new ProviderException(exceptionMessage);
                 }
                 else
-                {
                     throw e;
-                }
             }
             finally
             {
-                if (reader != null) { reader.Close(); }
-                conn.Close();
+                try
+                {
+                    // end transaction
+                    if (performCommit)
+                        db.Transaction.Commit();
+                    else
+                        db.Transaction.Rollback();
+                    // close database connection
+                    connection.Close();
+                }
+                catch (Exception) { }
             }
-
-            if (rowsAffected > 0)
-            {
-                return newPassword;
-            }
-            else
-            {
-                throw new MembershipPasswordException("User not found, or user is locked out. Password not Reset.");
-            }*/
         }
 
         public override void UpdateUser(MembershipUser user)
@@ -712,12 +902,13 @@ namespace GuruTest
             }
         }
 
-        private Account GetAccount(string login)
+        private Account GetAccount(string login, TestGuruDBDataContext db)
         {
             Account toReturn = null;
             try
             {
-                TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
+                if (db == null)
+                    db = new TestGuruDBDataContext(connectionString);
                 var result = from i in db.Accounts
                              where i.Login == login.ToLower() && i.Deleted == false
                              select i;
@@ -740,8 +931,8 @@ namespace GuruTest
 
         public override bool ValidateUser(string username, string password)
         {
-            Account account = GetAccount(username);
-            return (account != null && account.Active && account.Password == MD5.Create().ComputeHash(Encoding.Default.GetBytes(password)));
+            Account account = GetAccount(username, null);
+            return (account != null && account.Active && CheckLock(account.ID, null, account.Password == MD5.Create().ComputeHash(Encoding.Default.GetBytes(password)), false, null));
         }
 
         private void UpdateFailureCount(string username, string failureType)
@@ -883,13 +1074,13 @@ namespace GuruTest
         }
 
         public override MembershipUserCollection FindUsersByName(string usernameToMatch, int pageIndex, int pageSize, out int totalRecords)
-        {            
+        {
             MembershipUserCollection users = new MembershipUserCollection();
             try
             {
                 TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
                 var allUsers = from i in db.Accounts
-                               where i.Active == true && i.Deleted == false 
+                               where i.Active == true && i.Deleted == false
                                //&& SqlMethods.Like(i.Login, usernameToMatch)
                                orderby i.Login ascending
                                select i;
@@ -919,7 +1110,7 @@ namespace GuruTest
                 else
                     throw e;
             }
-            return users;           
+            return users;
         }
 
         public override MembershipUserCollection FindUsersByEmail(string emailToMatch, int pageIndex, int pageSize, out int totalRecords)
@@ -929,7 +1120,7 @@ namespace GuruTest
             {
                 TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
                 var allUsers = from i in db.Accounts
-                               where i.Active == true && i.Deleted == false 
+                               where i.Active == true && i.Deleted == false
                                //&& SqlMethods.Like(i.Login, emailToMatch)
                                orderby i.Login ascending
                                select i;
@@ -959,7 +1150,7 @@ namespace GuruTest
                 else
                     throw e;
             }
-            return users;   
+            return users;
         }
 
         private void WriteToEventLog(Exception e, string action)
