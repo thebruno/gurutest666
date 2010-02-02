@@ -17,7 +17,7 @@ namespace GuruTest
     {
         protected void Page_Load(object sender, EventArgs e)
         {
-
+            Label1.Text = Context.User.Identity.Name + " " + Context.User.Identity.IsAuthenticated.ToString();
         }
     }
 }
