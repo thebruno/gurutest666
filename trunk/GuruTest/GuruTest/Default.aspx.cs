@@ -11,8 +11,11 @@ namespace GuruTest
     {
         protected void Page_Load(object sender, EventArgs e)
         {
+            //System.Web.Security.MembershipCreateStatus t;
+            string[] a = System.Web.Security.Roles.Provider.GetAllRoles();
+            string[] b = System.Web.Security.Roles.Provider.GetRolesForUser("f");
+            int i = 0;
 
-            System.Web.Security.MembershipCreateStatus t;
             //System.Web.Security.Membership.Provider.UnlockUser("f");
             //int a;
             //System.Web.Security.Membership.Provider.GetAllUsers(0, 100, out a);

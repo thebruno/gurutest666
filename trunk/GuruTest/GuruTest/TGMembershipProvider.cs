@@ -44,7 +44,7 @@ namespace GuruTest
             if (String.IsNullOrEmpty(config["description"]))
             {
                 config.Remove("description");
-                config.Add("description", "Our TestGuru Membership provider");
+                config.Add("description", "Our TestGuru membership provider");
             }
 
             // Initialize the abstract base class.
@@ -82,7 +82,7 @@ namespace GuruTest
 
         }
 
-        private string GetConfigValue(string configValue, string defaultValue)
+        public static string GetConfigValue(string configValue, string defaultValue)
         {
             if (String.IsNullOrEmpty(configValue))
                 return defaultValue;
@@ -935,144 +935,6 @@ namespace GuruTest
             return (account != null && account.Active && CheckLock(account.ID, null, account.Password == MD5.Create().ComputeHash(Encoding.Default.GetBytes(password)), false, null));
         }
 
-        private void UpdateFailureCount(string username, string failureType)
-        {
-            /*OdbcConnection conn = new OdbcConnection(connectionString);
-            OdbcCommand cmd = new OdbcCommand("SELECT FailedPasswordAttemptCount, " +
-                                              "  FailedPasswordAttemptWindowStart, " +
-                                              "  FailedPasswordAnswerAttemptCount, " +
-                                              "  FailedPasswordAnswerAttemptWindowStart " +
-                                              "  FROM Users " +
-                                              "  WHERE Username = ? AND ApplicationName = ?", conn);
-
-            cmd.Parameters.Add("@Username", OdbcType.VarChar, 255).Value = username;
-            cmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = pApplicationName;
-
-            OdbcDataReader reader = null;
-            DateTime windowStart = new DateTime();
-            int failureCount = 0;
-
-            try
-            {
-                conn.Open();
-
-                reader = cmd.ExecuteReader(CommandBehavior.SingleRow);
-
-                if (reader.HasRows)
-                {
-                    reader.Read();
-
-                    if (failureType == "password")
-                    {
-                        failureCount = reader.GetInt32(0);
-                        windowStart = reader.GetDateTime(1);
-                    }
-
-                    if (failureType == "passwordAnswer")
-                    {
-                        failureCount = reader.GetInt32(2);
-                        windowStart = reader.GetDateTime(3);
-                    }
-                }
-
-                reader.Close();
-
-                DateTime windowEnd = windowStart.AddMinutes(PasswordAttemptWindow);
-
-                if (failureCount == 0 || DateTime.Now > windowEnd)
-                {
-                    // First password failure or outside of PasswordAttemptWindow. 
-                    // Start a new password failure count from 1 and a new window starting now.
-
-                    if (failureType == "password")
-                        cmd.CommandText = "UPDATE Users " +
-                                          "  SET FailedPasswordAttemptCount = ?, " +
-                                          "      FailedPasswordAttemptWindowStart = ? " +
-                                          "  WHERE Username = ? AND ApplicationName = ?";
-
-                    if (failureType == "passwordAnswer")
-                        cmd.CommandText = "UPDATE Users " +
-                                          "  SET FailedPasswordAnswerAttemptCount = ?, " +
-                                          "      FailedPasswordAnswerAttemptWindowStart = ? " +
-                                          "  WHERE Username = ? AND ApplicationName = ?";
-
-                    cmd.Parameters.Clear();
-
-                    cmd.Parameters.Add("@Count", OdbcType.Int).Value = 1;
-                    cmd.Parameters.Add("@WindowStart", OdbcType.DateTime).Value = DateTime.Now;
-                    cmd.Parameters.Add("@Username", OdbcType.VarChar, 255).Value = username;
-                    cmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = pApplicationName;
-
-                    if (cmd.ExecuteNonQuery() < 0)
-                        throw new ProviderException("Unable to update failure count and window start.");
-                }
-                else
-                {
-                    if (failureCount++ >= MaxInvalidPasswordAttempts)
-                    {
-                        // Password attempts have exceeded the failure threshold. Lock out
-                        // the user.
-
-                        cmd.CommandText = "UPDATE Users " +
-                                          "  SET IsLockedOut = ?, LastLockedOutDate = ? " +
-                                          "  WHERE Username = ? AND ApplicationName = ?";
-
-                        cmd.Parameters.Clear();
-
-                        cmd.Parameters.Add("@IsLockedOut", OdbcType.Bit).Value = true;
-                        cmd.Parameters.Add("@LastLockedOutDate", OdbcType.DateTime).Value = DateTime.Now;
-                        cmd.Parameters.Add("@Username", OdbcType.VarChar, 255).Value = username;
-                        cmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = pApplicationName;
-
-                        if (cmd.ExecuteNonQuery() < 0)
-                            throw new ProviderException("Unable to lock out user.");
-                    }
-                    else
-                    {
-                        // Password attempts have not exceeded the failure threshold. Update
-                        // the failure counts. Leave the window the same.
-
-                        if (failureType == "password")
-                            cmd.CommandText = "UPDATE Users " +
-                                              "  SET FailedPasswordAttemptCount = ?" +
-                                              "  WHERE Username = ? AND ApplicationName = ?";
-
-                        if (failureType == "passwordAnswer")
-                            cmd.CommandText = "UPDATE Users " +
-                                              "  SET FailedPasswordAnswerAttemptCount = ?" +
-                                              "  WHERE Username = ? AND ApplicationName = ?";
-
-                        cmd.Parameters.Clear();
-
-                        cmd.Parameters.Add("@Count", OdbcType.Int).Value = failureCount;
-                        cmd.Parameters.Add("@Username", OdbcType.VarChar, 255).Value = username;
-                        cmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = pApplicationName;
-
-                        if (cmd.ExecuteNonQuery() < 0)
-                            throw new ProviderException("Unable to update failure count.");
-                    }
-                }
-            }
-            catch (OdbcException e)
-            {
-                if (WriteExceptionsToEventLog)
-                {
-                    WriteToEventLog(e, "UpdateFailureCount");
-
-                    throw new ProviderException(exceptionMessage);
-                }
-                else
-                {
-                    throw e;
-                }
-            }
-            finally
-            {
-                if (reader != null) { reader.Close(); }
-                conn.Close();
-            }*/
-        }
-
         public override MembershipUserCollection FindUsersByName(string usernameToMatch, int pageIndex, int pageSize, out int totalRecords)
         {
             MembershipUserCollection users = new MembershipUserCollection();
@@ -1080,8 +942,7 @@ namespace GuruTest
             {
                 TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
                 var allUsers = from i in db.Accounts
-                               where i.Active == true && i.Deleted == false
-                               //&& SqlMethods.Like(i.Login, usernameToMatch)
+                               where i.Active == true && i.Deleted == false && System.Data.Linq.SqlClient.SqlMethods.Like(i.Login, usernameToMatch)
                                orderby i.Login ascending
                                select i;
 
