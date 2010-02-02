@@ -246,101 +246,114 @@ namespace GuruTest
 
         public override string[] GetUsersInRole(string rolename)
         {
-            return null;
+            if (rolename == null)
+                throw new ArgumentNullException("Role name cannot be null.");
 
-            // TODO: zaimplementować
-            /*string tmpUserNames = "";
+            if (rolename == "")
+                throw new ArgumentException("Role name cannot be empty.");
 
-            OdbcConnection conn = new OdbcConnection(connectionString);
-            OdbcCommand cmd = new OdbcCommand("SELECT Username FROM UsersInRoles " +
-                      " WHERE Rolename = ? AND ApplicationName = ?", conn);
-
-            cmd.Parameters.Add("@Rolename", OdbcType.VarChar, 255).Value = rolename;
-            cmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = ApplicationName;
-
-            OdbcDataReader reader = null;
+            // role names to return
+            List<string> toReturn = new List<string>();
 
             try
             {
-                conn.Open();
-
-                reader = cmd.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    tmpUserNames += reader.GetString(0) + ",";
-                }
+                TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
+                var result = from acc in db.Accounts
+                             where (
+                                from accRl in db.AccountRoles
+                                where accRl.Account == acc.ID && (
+                                    from rl in db.Roles
+                                    where rl.ID == accRl.Account && rl.Administrator == true && (
+                                        from per in db.Permissions
+                                        where per.Name == rolename
+                                        select per
+                                    ).Count() > 0
+                                    select rl).Count() > 0
+                                select accRl
+                             ).Count() > 0 || (
+                                from accRl in db.AccountRoles
+                                where accRl.Account == acc.ID && (
+                                    from rl in db.Roles
+                                    where rl.ID == accRl.Role && (
+                                        from rolePerm in db.PermissionRoles
+                                        where rolePerm.Role == rl.ID &&
+                                            rolePerm.Permission == rolename
+                                        select rolePerm
+                                    ).Count() > 0
+                                    select rl
+                                ).Count() > 0
+                                select accRl
+                             ).Count() > 0
+                             select acc;
+                foreach (Account a in result)
+                    toReturn.Add(a.Login);
             }
-            catch (OdbcException e)
+            catch (Exception e)
             {
                 if (WriteExceptionsToEventLog)
                 {
-                    WriteToEventLog(e, "GetUsersInRole");
+                    WriteToEventLog(e, "Unhandled exception in GetUsersInRole method");
+                    throw new ProviderException(exceptionMessage);
                 }
                 else
-                {
-                    throw e;
-                }
-            }
-            finally
-            {
-                if (reader != null) { reader.Close(); }
-                conn.Close();
+                    throw e;               
             }
 
-            if (tmpUserNames.Length > 0)
-            {
-                // Remove trailing comma.
-                tmpUserNames = tmpUserNames.Substring(0, tmpUserNames.Length - 1);
-                return tmpUserNames.Split(',');
-            }
-
-            return new string[0];*/
+            return toReturn.ToArray();
         }
 
         public override bool IsUserInRole(string username, string rolename)
         {
-            return false;
+            if (username == null || rolename == null)
+                throw new ArgumentNullException("User name and role name cannot be null.");
 
-            // TODO: zaimplementować
-            /*bool userIsInRole = false;
-
-            OdbcConnection conn = new OdbcConnection(connectionString);
-            OdbcCommand cmd = new OdbcCommand("SELECT COUNT(*) FROM UsersInRoles " +
-                    " WHERE Username = ? AND Rolename = ? AND ApplicationName = ?", conn);
-
-            cmd.Parameters.Add("@Username", OdbcType.VarChar, 255).Value = username;
-            cmd.Parameters.Add("@Rolename", OdbcType.VarChar, 255).Value = rolename;
-            cmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = ApplicationName;
+            if (username == "" || rolename == "")
+                throw new ArgumentException("User name and role name cannot be empty.");
 
             try
             {
-                conn.Open();
-
-                int numRecs = (int)cmd.ExecuteScalar();
-
-                if (numRecs > 0)
-                {
-                    userIsInRole = true;
-                }
+                TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
+                bool toReturn = (from acc in db.Accounts
+                                 where acc.Login == username && (
+                                 (
+                                    from accRl in db.AccountRoles
+                                    where accRl.Account == acc.ID && (
+                                        from rl in db.Roles
+                                        where rl.ID == accRl.Account && rl.Administrator == true && (
+                                            from per in db.Permissions
+                                            where per.Name == rolename
+                                            select per
+                                        ).Count() > 0
+                                        select rl).Count() > 0
+                                    select accRl
+                                 ).Count() > 0 || (
+                                    from accRl in db.AccountRoles
+                                    where accRl.Account == acc.ID && (
+                                        from rl in db.Roles
+                                        where rl.ID == accRl.Role && (
+                                            from rolePerm in db.PermissionRoles
+                                            where rolePerm.Role == rl.ID &&
+                                                rolePerm.Permission == rolename
+                                            select rolePerm
+                                        ).Count() > 0
+                                        select rl
+                                    ).Count() > 0
+                                    select accRl
+                                 ).Count() > 0
+                                 )
+                                 select acc).Count() > 0;
+                return toReturn;
             }
-            catch (OdbcException e)
+            catch (Exception e)
             {
-                if (WriteExceptionsToEventLog)
+               if (WriteExceptionsToEventLog)
                 {
-                    WriteToEventLog(e, "IsUserInRole");
+                    WriteToEventLog(e, "Unhandled exception in IsUserInRole method");
+                    throw new ProviderException(exceptionMessage);
                 }
                 else
-                {
                     throw e;
-                }
             }
-            finally
-            {
-                conn.Close();
-            }
-
-            return userIsInRole;*/
         }
 
         public override void RemoveUsersFromRoles(string[] usernames, string[] rolenames)
@@ -381,56 +394,61 @@ namespace GuruTest
 
         public override string[] FindUsersInRole(string rolename, string usernameToMatch)
         {
-            return null;
+            if (rolename == null || usernameToMatch == null)
+                throw new ArgumentNullException("Role name and user name to match cannot be null.");
 
-            // TODO: zaimplementować
-            /*OdbcConnection conn = new OdbcConnection(connectionString);
-            OdbcCommand cmd = new OdbcCommand("SELECT Username FROM UsersInRoles  " +
-                      "WHERE Username LIKE ? AND RoleName = ? AND ApplicationName = ?", conn);
-            cmd.Parameters.Add("@UsernameSearch", OdbcType.VarChar, 255).Value = usernameToMatch;
-            cmd.Parameters.Add("@RoleName", OdbcType.VarChar, 255).Value = rolename;
-            cmd.Parameters.Add("@ApplicationName", OdbcType.VarChar, 255).Value = pApplicationName;
+            if (rolename == "" || usernameToMatch == "")
+                throw new ArgumentException("Role name and user name to match cannot be empty.");
 
-            string tmpUserNames = "";
-            OdbcDataReader reader = null;
+            // role names to return
+            List<string> toReturn = new List<string>();
 
             try
             {
-                conn.Open();
-
-                reader = cmd.ExecuteReader();
-
-                while (reader.Read())
-                {
-                    tmpUserNames += reader.GetString(0) + ",";
-                }
+                TestGuruDBDataContext db = new TestGuruDBDataContext(connectionString);
+                var result = from acc in db.Accounts
+                             where System.Data.Linq.SqlClient.SqlMethods.Like(acc.Login, usernameToMatch) && (
+                             (
+                                from accRl in db.AccountRoles
+                                where accRl.Account == acc.ID && (
+                                    from rl in db.Roles
+                                    where rl.ID == accRl.Account && rl.Administrator == true && (
+                                        from per in db.Permissions
+                                        where per.Name == rolename
+                                        select per
+                                    ).Count() > 0
+                                    select rl).Count() > 0
+                                select accRl
+                             ).Count() > 0 || (
+                                from accRl in db.AccountRoles
+                                where accRl.Account == acc.ID && (
+                                    from rl in db.Roles
+                                    where rl.ID == accRl.Role && (
+                                        from rolePerm in db.PermissionRoles
+                                        where rolePerm.Role == rl.ID &&
+                                            rolePerm.Permission == rolename
+                                        select rolePerm
+                                    ).Count() > 0
+                                    select rl
+                                ).Count() > 0
+                                select accRl
+                             ).Count() > 0)
+                             select acc;
+                foreach (Account a in result)
+                    toReturn.Add(a.Login);
             }
-            catch (OdbcException e)
+            catch (Exception e)
             {
                 if (WriteExceptionsToEventLog)
                 {
-                    WriteToEventLog(e, "FindUsersInRole");
+                    WriteToEventLog(e, "Unhandled exception in FindUsersInRole method");
+                    throw new ProviderException(exceptionMessage);
                 }
                 else
-                {
                     throw e;
-                }
-            }
-            finally
-            {
-                if (reader != null) { reader.Close(); }
-
-                conn.Close();
             }
 
-            if (tmpUserNames.Length > 0)
-            {
-                // Remove trailing comma.
-                tmpUserNames = tmpUserNames.Substring(0, tmpUserNames.Length - 1);
-                return tmpUserNames.Split(',');
-            }
-
-            return new string[0];*/
+            return toReturn.ToArray();
         }
 
         private void WriteToEventLog(Exception e, string action)
