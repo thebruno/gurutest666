@@ -63,7 +63,7 @@ namespace GuruTest
     #endregion
 		
 		public TestGuruDBDataContext() : 
-				base(global::System.Configuration.ConfigurationManager.ConnectionStrings["TestGuruDBConnectionString1"].ConnectionString, mappingSource)
+				base(global::System.Configuration.ConfigurationManager.ConnectionStrings["TestGuruDBConnectionString"].ConnectionString, mappingSource)
 		{
 			OnCreated();
 		}

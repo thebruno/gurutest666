@@ -62,14 +62,14 @@
         <elementListCompartment Id="6e8a46b0-28a6-41a1-ad01-06c593dcdf0a" absoluteBounds="6.765, 1.585, 1.9700000000000002, 0.53615315755208326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <associationConnector edgePoints="[(5.5 : 7.42307657877604); (6.25 : 7.42307657877604)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(5.5 : 7.42307657877604); (6.25 : 7.42307657877604)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/TestGuruDBDataContext/Article/Article_Attachment" />
       <nodes>
         <classShapeMoniker Id="70bde434-a6c6-48f6-828b-5874a0dfb075" />
         <classShapeMoniker Id="2bf836d5-3d64-4c40-8ea5-0bba1e34d180" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(5.5 : 7.125); (5.875 : 6.75); (5.875 : 4.41959757486979); (6.25 : 4.41959757486979)]" fixedFrom="NotFixed" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(5.5 : 7.125); (5.875 : 6.75); (5.875 : 4.41959757486979); (6.25 : 4.41959757486979)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/TestGuruDBDataContext/Article/Article_Comment" />
       <nodes>
         <classShapeMoniker Id="70bde434-a6c6-48f6-828b-5874a0dfb075" />
@@ -83,28 +83,28 @@
         <classShapeMoniker Id="2bf836d5-3d64-4c40-8ea5-0bba1e34d180" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(1.75 : 7.46875244140625); (1.75 : 8.58451628776042); (3.19791666666667 : 8.58451628776042 : JumpStart); (3.36458333333333 : 8.58451628776042 : JumpEnd); (3.5 : 8.58451628776042)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(1.75 : 7.46875244140625); (1.75 : 8.58451628776042); (3.19791666666667 : 8.58451628776042 : JumpStart); (3.36458333333333 : 8.58451628776042 : JumpEnd); (3.5 : 8.58451628776042)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/TestGuruDBDataContext/Account/Account_Article" />
       <nodes>
         <classShapeMoniker Id="65a304cf-08f9-40a0-a539-199aab250c82" />
         <classShapeMoniker Id="70bde434-a6c6-48f6-828b-5874a0dfb075" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(2.75 : 4.16412536621094); (3.19791666666667 : 4.16412536621094 : JumpStart); (3.36458333333333 : 4.16412536621094 : JumpEnd); (6.25 : 4.16412536621094)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(2.75 : 4.16412536621094); (6.25 : 4.16412536621094)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/TestGuruDBDataContext/Account/Account_Comment" />
       <nodes>
         <classShapeMoniker Id="65a304cf-08f9-40a0-a539-199aab250c82" />
         <classShapeMoniker Id="416e7a19-974b-4c8a-8077-ef132fe0d3a6" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(2.75 : 5.54459757486979); (3.19791666666667 : 5.54459757486979 : JumpStart); (3.36458333333333 : 5.54459757486979 : JumpEnd); (3.5 : 5.54459757486979)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(2.75 : 5.54459757486979); (3.5 : 5.54459757486979)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/TestGuruDBDataContext/Account/Account_UserFile" />
       <nodes>
         <classShapeMoniker Id="65a304cf-08f9-40a0-a539-199aab250c82" />
         <classShapeMoniker Id="5377df5e-ea78-44a2-91e2-c4bd8deb930b" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(2.75 : 3.61057657877604); (3.19791666666667 : 3.61057657877604 : JumpStart); (3.36458333333333 : 3.61057657877604 : JumpEnd); (3.5 : 3.61057657877604)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(2.75 : 3.61057657877604); (3.5 : 3.61057657877604)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/TestGuruDBDataContext/Account/Account_AccountRole" />
       <nodes>
         <classShapeMoniker Id="65a304cf-08f9-40a0-a539-199aab250c82" />
@@ -125,7 +125,7 @@
         <classShapeMoniker Id="961fe0ef-e046-4a2c-83b8-49e12e0df15a" />
       </nodes>
     </associationConnector>
-    <associationConnector edgePoints="[(2.75 : 1.39182407877604); (3.5 : 1.39182407877604)]" fixedFrom="Algorithm" fixedTo="Algorithm">
+    <associationConnector edgePoints="[(2.75 : 1.39182407877604); (3.5 : 1.39182407877604)]" fixedFrom="NotFixed" fixedTo="NotFixed">
       <AssociationMoniker Name="/TestGuruDBDataContext/Role/Role_PermissionRole" />
       <nodes>
         <classShapeMoniker Id="ac563980-4b2b-439d-b521-c998ba9e0bc7" />
